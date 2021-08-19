@@ -22,3 +22,23 @@ exports.randonNumber= functions.https.onRequest((request, response)=> {
 exports.toTheDojo= functions.https.onRequest((request, response)=> {
     response.redirect('https://www.thenetninja.co.uk');
 });
+
+
+//http callable function
+exports.sayHello= functions.https.onCall((data, context)=> {
+    const name= data.name;
+    return `Hello ${name} from Cloud Functions -:)`;
+});
+
+//http callable function 2
+exports.calculator= functions.https.onCall((data, context)=> {
+    const number1= data.number1;
+    const number2= data.number2;
+    const suma= number1 + number2;
+
+    return {
+        number1,
+        number2,
+        suma
+    }; 
+})
