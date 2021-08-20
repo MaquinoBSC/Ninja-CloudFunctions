@@ -34,11 +34,18 @@ exports.sayHello= functions.https.onCall((data, context)=> {
 exports.calculator= functions.https.onCall((data, context)=> {
     const number1= data.number1;
     const number2= data.number2;
-    const suma= number1 + number2;
+    
+    if(!isNaN(number1) && !isNaN(number2)){
+        const suma= number1 + number2;
+        
+        return {
+            number1,
+            number2,
+            suma
+        }; 
+    }
+    else{
+        return Promise.reject(new functions.https.HttpsError("invalid-argument", 'Revisa los datos enviados.'));
+    }
 
-    return {
-        number1,
-        number2,
-        suma
-    }; 
 })

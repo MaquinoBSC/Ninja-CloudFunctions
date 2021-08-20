@@ -31,8 +31,11 @@ button.addEventListener('click', ()=> {
 const sumaButton= document.querySelector('.suma');
 sumaButton.addEventListener('click', ()=> {
     const suma= firebase.functions().httpsCallable('calculator');
-    suma({number1: 34, number2: 14})
+    suma({number1: 56, number2: 45})
         .then((result)=> {
             console.log(result.data);
+        })
+        .catch((erro)=> {
+            console.log(erro.data);
         })
 })
