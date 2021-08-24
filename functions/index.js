@@ -48,4 +48,22 @@ exports.calculator= functions.https.onCall((data, context)=> {
         return Promise.reject(new functions.https.HttpsError("invalid-argument", 'Revisa los datos enviados.'));
     }
 
-})
+});
+
+
+//auth trigger (new user signup)
+
+//Esta sera una authentication trigger function, ya no es una funcion https
+//esto esta basado en cuando pasa algo con el usuario
+//cuando un usuario sea creado se dispara el callback
+//ese callback lleva como parametro el usuario creado
+exports.newUserSignup= functions.auth.user().onCreate((user)=> {
+    console.log("user ", user);
+    console.log("user created ", user.email, user.uid);
+});
+
+//auth trigger (user deleted)
+exports.userDeleted= functions.auth.user().onDelete((user)=> {
+    console.log("user ", user);
+    console.log("user deleted ", user.email, user.uid);
+});
