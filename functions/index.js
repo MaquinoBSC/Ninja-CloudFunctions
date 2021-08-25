@@ -76,3 +76,27 @@ exports.userDeleted= functions.auth.user().onDelete((user)=> {
     //Eliminamos el documento que corresponde al usuario y retornamos una promesa
     return doc.delete();
 });
+
+
+// http callable function (adding a request)
+//context contiene informacion util para verificar si el usuario es autenticado
+exports.addRequest= functions.https.onCall((data, context)=> {
+    if(!context.auth){
+        throw new functions.https.HttpsError(
+            'unauthenticated',
+            'only authenticated user can add requests'
+        );
+    }
+
+    if(data.text.lenght > 30){
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'request must be no more tha 30 characters long'
+        );
+    }
+
+    return admin.firestore.collection('requests').add({
+        text: data.text,
+        upvotes: 0,
+    })
+})
