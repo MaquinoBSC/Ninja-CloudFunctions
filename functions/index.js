@@ -104,4 +104,43 @@ exports.addRequest= functions.https.onCall((data, context)=> {
     return {
         msg: "Everythin OK"
     };
-})
+});
+
+
+// upvote callable function
+exports.upvote= functions.https.onCall((data, context)=> {
+    
+    //check auth state
+    if(!context.auth){
+        throw new functions.https.HttpsError(
+            'unauthenticated',
+            'only authenticated user can add requests'
+        );
+    }
+
+    //get refs user doc and request doc
+    const user= admin.firestore().collection('users').doc(context.auth.uid);
+    const request= admin.firestore().collection('requests').doc(data.id);
+
+    return user.get()
+        .then((doc)=> {
+            //check user hasn't already upvoted the request
+            if(doc.data().upVotedOn.includes(data.id)){
+                throw new functions.https.HttpsError(
+                    'failed-precondition',
+                    'You can only upvote something once'
+                );
+            }
+
+            //update upVotedOn array
+            return user.update({
+                upVotedOn: [...doc.data().upVotedOn, data.id]
+            })
+            .then(()=> {
+                //update votes on the request
+                return request.update({
+                    upvotes: admin.firestore.FieldValue.increment(1)
+                })
+            })
+        })
+});
