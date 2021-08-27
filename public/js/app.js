@@ -32,7 +32,21 @@ requestForm.addEventListener('submit', (e)=> {
         .catch((error)=> {
             requestForm.querySelector('.error').textContent= error.message;
         })
-})
+});
+
+
+//notification
+const notification= document.querySelector('.notification');
+
+const showNotification= (message)=> {
+    notification.textContent= message;
+    notification.classList.add('active');
+
+    setTimeout(()=> {
+        notification.classList.remove('active');
+        notification.textContent= '';
+    }, 4000);
+}
 
 
 //sayHello function call
