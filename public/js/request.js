@@ -3,8 +3,17 @@ var app = new Vue({//Instancia de Vue
     data: {
         requests: []
     },
+    methods: {
+        upvoteRequest(id){
+            const upvote= firebase.functions().httpsCallable('upvote');
+            upvote({id})
+                .catch((error)=> {
+                    console.log(error.message);
+                })
+        }
+    },
     mounted() {
-        const ref= firebase.firestore().collection('requests'); //Obetner la referencia a la coleccion requests
+        const ref= firebase.firestore().collection('requests').orderBy('upvotes', 'desc'); //Obetner la referencia a la coleccion requests
         
         //onSnapshot es una funcion que ejecuta un callback cada que ocurre un cambio en la coleccion
         //snapshot representa la coleccion con los datos ya actualizados
