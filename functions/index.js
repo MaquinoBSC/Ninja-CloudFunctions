@@ -108,7 +108,7 @@ exports.addRequest= functions.https.onCall((data, context)=> {
 
 
 // upvote callable function
-exports.upvote= functions.https.onCall((data, context)=> {
+exports.upvote= functions.https.onCall(async(data, context)=> {
     
     //check auth state
     if(!context.auth){
@@ -122,25 +122,51 @@ exports.upvote= functions.https.onCall((data, context)=> {
     const user= admin.firestore().collection('users').doc(context.auth.uid);
     const request= admin.firestore().collection('requests').doc(data.id);
 
-    return user.get()
-        .then((doc)=> {
-            //check user hasn't already upvoted the request
-            if(doc.data().upVotedOn.includes(data.id)){
-                throw new functions.https.HttpsError(
-                    'failed-precondition',
-                    'You can only upvote something once'
-                );
-            }
 
-            //update upVotedOn array
-            return user.update({
-                upVotedOn: [...doc.data().upVotedOn, data.id]
-            })
-            .then(()=> {
-                //update votes on the request
-                return request.update({
-                    upvotes: admin.firestore.FieldValue.increment(1)
-                })
-            })
-        })
+    const doc= await user.get();
+        
+    //check user hasn't already upvoted the request
+    if(doc.data().upVotedOn.includes(data.id)){
+        throw new functions.https.HttpsError(
+            'failed-precondition',
+            'You can only upvote something once'
+        );
+    }
+
+    //update upVotedOn array
+    await user.update({
+        upVotedOn: [...doc.data().upVotedOn, data.id]
+    })
+
+    //update votes on the request
+    await request.update({
+        upvotes: admin.firestore.FieldValue.increment(1)
+    })
+});
+
+
+//firestore trigger for tracking activity
+//para saber a que documento vamos a triggerear 
+//     /users/{id}  -> vamos a triggerear todos los usuarios que se ingresen en el documento users
+//     /requests/{id}  -> vamos a triggerear todos los request que se ingrese en el documento requests
+//     /{document}/{id}  -> vamos a triggerear todos los camhios en firestore
+exports.logActivity= functions.firestore.document('/{collection}/{id}').onCreate(async (snap, context)=> {
+    console.log(snap.data());
+
+    const collection= context.params.collection;
+    const id= context.params.id;
+
+    const activities= admin.firestore().collection('activities');
+
+    if(collection === 'requests'){
+        await activities.add({
+            text: "a new tutorial request was added"
+        });
+    }
+
+    if(collection === 'users'){
+        await activities.add({
+            text: "a new user signed up"
+        });
+    }
 });
